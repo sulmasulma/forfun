@@ -84,9 +84,8 @@ def main():
             d = ele.table.tbody.tr.td
             num = int(d.font.get_text())
             color = d.get('bgcolor')
-            # 원하는 자리 났을 경우
+            # 원하는 자리 났을 경우, 리스트에 자리와 색 넣기
             if ((num >= 309 and num <= 360) or num >= 369) and color == "#5AB6CF":
-                # 리스트에 자리와 색 넣기
                 data.append([num, color])
 
         # 파란색으로 바뀌었으면 메일 보내기
