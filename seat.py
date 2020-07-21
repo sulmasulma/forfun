@@ -4,23 +4,19 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 
-import smtplib, os, pickle  # smtplib: 메일 전송을 위한 패키지
-from email import encoders  # 파일전송을 할 때 이미지나 문서 동영상 등의 파일을 문자열로 변환할 때 사용할 패키지
-from email.mime.text import MIMEText   # 본문내용을 전송할 때 사용되는 모듈
-from email.mime.multipart import MIMEMultipart   # 메시지를 보낼 때 메시지에 대한 모듈
-from email.mime.base import MIMEBase     # 파일을 전송할 때 사용되는 모듈
-
-# 메일용 이메일 주소, 비밀번호
-email = "dlakxo93@gmail.com"
-pw = pickle.load(open('pw.pickle', 'rb'))
+import smtplib, os, pickle # smtplib: 메일 전송을 위한 패키지
+from email import encoders # 파일전송을 할 때 이미지나 문서 동영상 등의 파일을 문자열로 변환할 때 사용할 패키지
+from email.mime.text import MIMEText # 본문내용을 전송할 때 사용되는 모듈
+from email.mime.multipart import MIMEMultipart # 메시지를 보낼 때 메시지에 대한 모듈
+from email.mime.base import MIMEBase # 파일을 전송할 때 사용되는 모듈
 
 # SMTP 접속을 위한 서버, 계정 설정
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 # 보내는 메일 계정
-SMTP_USER = email
-SMTP_PASSWORD = pw
+SMTP_USER = "발신자 메일 주소"
+SMTP_PASSWORD = "발신자 비밀번호"
 
 # 이메일 유효성 검사 함수
 def is_valid(addr):
@@ -54,7 +50,6 @@ def send_mail(addr, subj_layout, cont_layout, attachment=None):
         file_data = MIMEBase("application", "octect-stream")
         file_data.set_payload(open(attachment, "rb").read())
         encoders.encode_base64(file_data)
-        import os
         filename = os.path.basename(attachment)
         file_data.add_header("Content-Disposition", 'attachment', filename=('UTF-8', '', filename))
         msg.attach(file_data)
@@ -69,7 +64,7 @@ def send_mail(addr, subj_layout, cont_layout, attachment=None):
 
 def main():
     driver = webdriver.Chrome('../chromedriver')
-    url = '사이트 url'
+    url = 'http://wisem.uos.ac.kr/SEAT/roomview5.asp?room_no=4' # 공존2 (노트북실)
     driver.get(url)
 
     while True:
