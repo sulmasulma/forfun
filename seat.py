@@ -1,22 +1,25 @@
-# 중도 자리 사이트 크롤링하여, 공존 노트북실에 빈 자리 나면 메일 보내는 코드
+# 도서관 사이트 크롤링하여, 노트북실에 빈 자리 나면 메일 보내는 코드
 # 참고: http://hleecaster.com/python-email-automation/
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 
 import smtplib, os, pickle # smtplib: 메일 전송을 위한 패키지
-from email import encoders # 파일전송을 할 때 이미지나 문서 동영상 등의 파일을 문자열로 변환할 때 사용할 패키지
-from email.mime.text import MIMEText # 본문내용을 전송할 때 사용되는 모듈
 from email.mime.multipart import MIMEMultipart # 메시지를 보낼 때 메시지에 대한 모듈
-from email.mime.base import MIMEBase # 파일을 전송할 때 사용되는 모듈
+from email.mime.text import MIMEText # 본문내용을 전송할 때 사용되는 모듈
+# from email import encoders # 파일전송을 할 때 이미지나 문서 동영상 등의 파일을 문자열로 변환할 때 사용할 패키지
+# from email.mime.base import MIMEBase # 파일을 전송할 때 사용되는 모듈
 
 # SMTP 접속을 위한 서버, 계정 설정
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
-# 보내는 메일 계정
+# 발신자 계정, 비밀번호
 SMTP_USER = "발신자 메일 주소"
 SMTP_PASSWORD = "발신자 비밀번호"
+
+# 수신자 계정
+addr = "수신자 메일 주소"
 
 # 이메일 유효성 검사 함수
 def is_valid(addr):
@@ -63,11 +66,14 @@ def send_mail(addr, subj_layout, cont_layout, attachment=None):
     smtp.close()
 
 def main():
-    driver = webdriver.Chrome('../chromedriver')
-    url = 'http://wisem.uos.ac.kr/SEAT/roomview5.asp?room_no=4' # 공존2 (노트북실)
+    driver = webdriver.Chrome('../../chromedriver')
+    url = '사이트 url'
     driver.get(url)
+    i = 0
 
     while True:
+        i += 1
+        print("{}번째 시도..".format(i))
         html = driver.find_element_by_id('maptemp').get_attribute('innerHTML')
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -80,19 +86,20 @@ def main():
             num = int(d.font.get_text())
             color = d.get('bgcolor')
             # 원하는 자리 났을 경우, 리스트에 자리와 색 넣기
-            if ((num >= 309 and num <= 360) or num >= 369) and color == "#5AB6CF":
+            if ((num >= 309 and num <= 360) or (num >= 377 and num <= 384)) and color == "#5AB6CF":
                 data.append([num, color])
 
         # 파란색으로 바뀌었으면 메일 보내기
         if data:
-            send_mail(email, '자리가 났습니다!!', ' '.join([str(d[0]) for d in data]))
+            cont = ' '.join([str(d[0]) for d in data])
+            send_mail(addr, '노트북실 자리가 났습니다!!', cont)
             print("자리 났음!! 종료")
             driver.quit() # 드라이버 완전히 종료. 창 하나만 닫으려면 .close()
             break
 
-        # 10초마다 반복
-        print("다음 루프로 갑니다..")
+        # 10초마다 새로고침하여 반복
         time.sleep(10)
+        driver.refresh()
 
 
 if __name__ == "__main__":
