@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # 도서관 사이트 크롤링하여, 노트북실에 빈 자리 나면 메일 보내는 코드
 # 참고: http://hleecaster.com/python-email-automation/
 from selenium import webdriver
@@ -15,11 +16,11 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 # 발신자 계정, 비밀번호
-SMTP_USER = "발신자 메일 주소"
+SMTP_USER = "발신자 메일"
 SMTP_PASSWORD = "발신자 비밀번호"
 
 # 수신자 계정
-addr = "수신자 메일 주소"
+addr = "수신자 메일"
 
 # 이메일 유효성 검사 함수
 def is_valid(addr):
@@ -67,7 +68,7 @@ def send_mail(addr, subj_layout, cont_layout, attachment=None):
 
 def main():
     driver = webdriver.Chrome('../../chromedriver')
-    url = '사이트 url'
+    url = '사이트 주소'
     driver.get(url)
     i = 0
 
@@ -86,19 +87,21 @@ def main():
             num = int(d.font.get_text())
             color = d.get('bgcolor')
             # 원하는 자리 났을 경우, 리스트에 자리와 색 넣기
-            if ((num >= 309 and num <= 360) or (num >= 377 and num <= 384)) and color == "#5AB6CF":
+            if any([309 <= num <= 360, 377 <= num <= 384]) and color == "#5AB6CF":
                 data.append([num, color])
 
         # 파란색으로 바뀌었으면 메일 보내기
         if data:
             cont = ' '.join([str(d[0]) for d in data])
+            cont += '\n'
+            cont += '사이트 주소'
             send_mail(addr, '노트북실 자리가 났습니다!!', cont)
             print("자리 났음!! 종료")
             driver.quit() # 드라이버 완전히 종료. 창 하나만 닫으려면 .close()
             break
 
-        # 10초마다 새로고침하여 반복
-        time.sleep(10)
+        # 20초마다 새로고침하여 반복
+        time.sleep(20)
         driver.refresh()
 
 
