@@ -3,6 +3,7 @@ import time, os, sys
 # sys.path.append('./libs') # libs 폴더에 들어있는 라이브러리를 사용하도록 configure
 import logging, pickle, requests, json, base64
 from urllib import parse
+from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
@@ -112,8 +113,8 @@ def upload_file_raw(channel_id, file_name):
     print(json.loads(r.text))
 
 
-# 사진 크롤링
-def scrap_photo():
+# 네이버 사진 크롤링
+def scrap_photo_naver():
     keyword = '아린'
 
     # 1. 웹 접속 - 네이버 이미지 접속
@@ -176,6 +177,44 @@ def scrap_photo():
     print('Download complete!')
 
 
+def scrap_photo_google():
+    keyword = '아린'
+    
+    # 1. 웹 접속 - 구글
+    print('Loading...')
+    driver = webdriver.Chrome('../../chromedriver')
+    driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
+
+    # 고화질 쿼리
+    url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword)
+    driver.get(url)
+
+    # 2. 이미지 링크 수집
+    photo_list = driver.find_elements_by_css_selector('img.rg_i')
+
+    # 폴더 없으면 새로 만들기
+    # location_name = 'arin'
+    if not os.path.isdir('./{}'.format(keyword)):
+        os.mkdir('./{}'.format(keyword))
+        print('Create new directory!')
+    else:
+        print('Image updates!')
+
+    img = photo_list[0] # 첫번째 사진 받기
+    img.click()
+
+    time.sleep(1)
+    html_objects = driver.find_element_by_css_selector('img.n3VNCb')
+    src = html_objects.get_attribute('src')
+
+    filename = "./{}/{}_{}.jpg".format(keyword, keyword, str(datetime.today().date()))
+    urlretrieve(src, filename)
+
+    driver.close()
+
+    print('Download complete!')
+
+
 
 def main():
     # fetch_conversations()
@@ -189,11 +228,11 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 크롤링
-    scrap_photo()
+    scrap_photo_google()
 
     # slack에 파일 올리기
-    photo_location = "./arin"
-    photo = "/arin_{}.jpg".format(1) # 확장자 다를(jpeg, png) 수도 있으니, 파일명 가져오는 걸로 바꾸기
+    photo_location = "./아린"
+    photo = "/아린_{}.jpg".format(str(datetime.today().date())) # gif -> jpg로 저장해도 움직임
     upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
 
     
