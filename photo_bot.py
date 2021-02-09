@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 import time, os, sys
 # sys.path.append('./libs') # libs 폴더에 들어있는 라이브러리를 사용하도록 configure
-import logging, pickle, requests, json, base64
-from urllib import parse
+import logging, requests, json, random
 from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.keys import Keys
-from tqdm import tqdm
+# from selenium.webdriver.common.keys import Keys
 from urllib.request import urlretrieve
 
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
+# logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -24,7 +23,7 @@ slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
 signing_secret = os.environ.get("SLACK_SIGNING_SECRET")
 client = WebClient(token=slack_bot_token)
 
-conversations_store = {}
+conversations_store = {} # 채널 목록 저장
 
 
 # 채널 목록 dict에 저장
@@ -86,7 +85,7 @@ def upload_file(channel_id, file_name):
         # Uploading files requires the `files:write` scope
         result = client.files_upload(
             channels = channel_id,
-            initial_comment = "오늘의 아린", # 이미지와 같이 들어가는 텍스트
+            # initial_comment = "오늘의 아린", # 이미지와 같이 들어가는 텍스트
             file = file_name,
         )
         # Log the result
@@ -178,6 +177,7 @@ def scrap_photo_naver():
 
 
 def scrap_photo_google():
+    
     keyword = '아린'
     
     # 1. 웹 접속 - 구글
@@ -185,27 +185,31 @@ def scrap_photo_google():
     driver = webdriver.Chrome('../../chromedriver')
     driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
-    # 고화질 쿼리
+    # 고화질(800x600보다 큰 이미지) + 최근 1달로 검색하는 url
     url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword)
     driver.get(url)
 
-    # 2. 이미지 링크 수집
+    # 2. 검색 결과 이미지들 수집(썸네일)
     photo_list = driver.find_elements_by_css_selector('img.rg_i')
 
+    # 날짜별 중복을 피하기 위해, 상위 20개 결과 중 랜덤으로 고르기
+    idx = random.randrange(20)
+    print("{}번째 사진 고르기".format(idx + 1))
+    img = photo_list[idx]
+    img.click()
+
+    time.sleep(1)
+    # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
+    # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
+    html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div/div[2]/a/img') # 현재 클릭하여 확대한 이미지 가져오기
+    src = html_objects.get_attribute('src')
+
     # 폴더 없으면 새로 만들기
-    # location_name = 'arin'
     if not os.path.isdir('./{}'.format(keyword)):
         os.mkdir('./{}'.format(keyword))
         print('Create new directory!')
     else:
         print('Image updates!')
-
-    img = photo_list[0] # 첫번째 사진 받기
-    img.click()
-
-    time.sleep(1)
-    html_objects = driver.find_element_by_css_selector('img.n3VNCb')
-    src = html_objects.get_attribute('src')
 
     filename = "./{}/{}_{}.jpg".format(keyword, keyword, str(datetime.today().date()))
     urlretrieve(src, filename)
