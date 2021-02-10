@@ -7,12 +7,16 @@ from datetime import datetime
 # 크롤링
 from selenium import webdriver
 from bs4 import BeautifulSoup
-# from selenium.webdriver.common.keys import Keys
 from urllib.request import urlretrieve
 
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+
+### for mac/windows ###
+driver = webdriver.Chrome('../../chromedriver') # linux에서는 사용 x
+# from selenium.webdriver.common.keys import Keys
+
 
 # logging
 logger = logging.getLogger()
@@ -20,7 +24,7 @@ logger.setLevel(logging.INFO)
 
 # initiate slack bot
 slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
-signing_secret = os.environ.get("SLACK_SIGNING_SECRET")
+signing_secret = os.environ.get("SLACK_SIGNING_SECRET") # 이 단계에선 필요 없음
 client = WebClient(token=slack_bot_token)
 
 conversations_store = {} # 채널 목록 저장
@@ -56,9 +60,10 @@ def post_message(channel_id, message):
             text=message
         )
         logger.info(result)
-
+    
     except SlackApiError as e:
-        logger.error(f"Error posting message: {e}")
+        # logger.error(f"Error posting message: {e}")
+        logger.error("Error posting message: {}".format(e))
 
 
 # 텍스트 쓰기 (api endpoint 이용)
@@ -118,7 +123,6 @@ def scrap_photo_naver():
 
     # 1. 웹 접속 - 네이버 이미지 접속
     print('Loading...')
-    driver = webdriver.Chrome('../../chromedriver')
     driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
     before_src = ""
@@ -177,12 +181,11 @@ def scrap_photo_naver():
 
 
 def scrap_photo_google():
-    
+
     keyword = '아린'
     
     # 1. 웹 접속 - 구글
     print('Loading...')
-    driver = webdriver.Chrome('../../chromedriver')
     driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
     # 고화질(800x600보다 큰 이미지) + 최근 1달로 검색하는 url
