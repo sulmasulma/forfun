@@ -8,6 +8,7 @@ from datetime import datetime
 from selenium import webdriver
 # from bs4 import BeautifulSoup
 from urllib.request import urlretrieve
+from urllib import parse
 
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
 from slack_sdk import WebClient
@@ -193,9 +194,9 @@ def scrap_photo_naver():
     print('Download complete!')
 
 
-def scrap_photo_google():
+def scrap_photo_google(keyword):
 
-    keyword = '아린'
+    keyword_parse = parse.quote(keyword) # url에 넣는 용도
     
     # 1. 웹 접속 - 구글
     print('Loading...')
@@ -203,7 +204,8 @@ def scrap_photo_google():
 
     # 고화질(800x600보다 큰 이미지) + 최근 1주로 검색하는 url
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1달
-    url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:w%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1주
+    # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:w%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1주
+    url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=itp:animated".format(keyword_parse) # gif(전체 기간)
     driver.get(url)
 
     # 2. 검색 결과 이미지들 수집(썸네일)
@@ -249,11 +251,12 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 크롤링
-    scrap_photo_google()
+    keyword = '오마이걸 아린'
+    scrap_photo_google(keyword)
 
     # slack에 파일 올리기
-    photo_location = "./아린"
-    photo = "/아린_{}.jpg".format(str(datetime.today().date())) # gif -> jpg로 저장해도 움직임
+    photo_location = "./{}".format(keyword)
+    photo = "/{}_{}.jpg".format(keyword, str(datetime.today().date())) # gif -> jpg로 저장해도 움직임
     upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
 
     
