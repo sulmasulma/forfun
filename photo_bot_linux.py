@@ -6,7 +6,7 @@ from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from urllib.request import urlretrieve
 
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
@@ -103,7 +103,7 @@ def upload_file(channel_id, file_name):
         # Uploading files requires the `files:write` scope
         result = client.files_upload(
             channels = channel_id,
-            # initial_comment = "오늘의 아린", # 이미지와 같이 들어가는 텍스트
+            initial_comment = "<!here>", # 이미지와 같이 들어가는 텍스트. 공지 처리
             file = file_name,
         )
         # Log the result
@@ -201,8 +201,9 @@ def scrap_photo_google():
     print('Loading...')
     driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
-    # 고화질(800x600보다 큰 이미지) + 최근 1달로 검색하는 url
-    url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword)
+    # 고화질(800x600보다 큰 이미지) + 최근 1주로 검색하는 url
+    # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1달
+    url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:w%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1주
     driver.get(url)
 
     # 2. 검색 결과 이미지들 수집(썸네일)
