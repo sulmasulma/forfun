@@ -193,7 +193,7 @@ def scrap_photo_naver():
 
     print('Download complete!')
 
-
+# 구글 사진 크롤링
 def scrap_photo_google(keyword):
 
     keyword_parse = parse.quote(keyword) # url에 넣는 용도
@@ -212,16 +212,24 @@ def scrap_photo_google(keyword):
     photo_list = driver.find_elements_by_css_selector('img.rg_i')
 
     # 날짜별 중복을 피하기 위해, 상위 20개 결과 중 랜덤으로 고르기
-    idx = random.randrange(20)
-    print("{}번째 사진 고르기".format(idx + 1))
-    img = photo_list[idx]
-    img.click()
+    while True:
+        idx = random.randrange(20)
+        print("{}번째 사진 고르기".format(idx + 1))
+        img = photo_list[idx]
+        img.click()
+        time.sleep(2) # 이미지 클릭후 로딩까지 잠시 대기
 
-    time.sleep(1)
-    # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
-    # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
-    html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div/div[2]/a/img') # 현재 클릭하여 확대한 이미지 가져오기
-    src = html_objects.get_attribute('src')
+        # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
+        # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
+        html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div/div[2]/a/img') # 현재 클릭하여 확대한 이미지 가져오기
+        src = html_objects.get_attribute('src')
+
+        # src가 http로 시작하는 것만으로 가져오기
+        if src[:4] == 'http':
+            print("gif 정상 성공!")
+            break
+        
+        print("http 형식 아님. 다시 찾기")
 
     # 폴더 없으면 새로 만들기
     if not os.path.isdir('./{}'.format(keyword)):
