@@ -16,7 +16,7 @@ from slack_sdk.errors import SlackApiError
 
 ### for mac/windows ###
 driver = webdriver.Chrome('../../chromedriver') # linux에서는 사용 x
-# from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.keys import Keys
 
 
 # logging
@@ -195,12 +195,19 @@ def scrap_photo_google(keyword):
     url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=itp:animated".format(keyword_parse) # gif(전체 기간)
     driver.get(url)
 
+    # 1.5 페이지 스크롤 다운 - 페이지를 스크롤 하여 더 많은 사진을 수집
+    # 1초에 한번씩 10번 반복하여 페이지 다운 스크롤
+    body = driver.find_element_by_css_selector('body')
+    for _ in range(3):
+        body.send_keys(Keys.PAGE_DOWN)
+        time.sleep(1)
+
     # 2. 검색 결과 이미지들 수집(썸네일)
     photo_list = driver.find_elements_by_css_selector('img.rg_i')
 
-    # 날짜별 중복을 피하기 위해, 상위 20개 결과 중 랜덤으로 고르기
+    # 날짜별 중복을 피하기 위해, 상위 100개 결과 중 랜덤으로 고르기
     while True:
-        idx = random.randrange(20)
+        idx = random.randrange(100)
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         img.click()
