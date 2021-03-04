@@ -196,9 +196,9 @@ def scrap_photo_google(keyword):
     driver.get(url)
 
     # 1.5 페이지 스크롤 다운 - 페이지를 스크롤 하여 더 많은 사진을 수집
-    # 1초에 한번씩 10번 반복하여 페이지 다운 스크롤
+    # 1초에 한번씩 3번 반복하여 페이지 다운 스크롤
     body = driver.find_element_by_css_selector('body')
-    for _ in range(3):
+    for _ in range(10):
         body.send_keys(Keys.PAGE_DOWN)
         time.sleep(1)
 
@@ -211,7 +211,7 @@ def scrap_photo_google(keyword):
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         img.click()
-        time.sleep(2) # 이미지 클릭후 로딩까지 잠시 대기
+        time.sleep(3) # 이미지 클릭후 로딩까지 잠시 대기
 
         # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
         # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
