@@ -6,8 +6,8 @@ from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
-# from bs4 import BeautifulSoup
-from urllib.request import urlretrieve
+from urllib.request import urlretrieve, urlopen, Request
+# from urllib.request import URLopener
 from urllib import parse
 
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
@@ -205,9 +205,9 @@ def scrap_photo_google(keyword):
     # 2. 검색 결과 이미지들 수집(썸네일)
     photo_list = driver.find_elements_by_css_selector('img.rg_i')
 
-    # 날짜별 중복을 피하기 위해, 상위 100개 결과 중 랜덤으로 고르기
+    # 날짜별 중복을 피하기 위해, 결과 중 상위 n개 결과 랜덤으로 고르기. 배열 길이가 300이어도 299번째 요소를 접근할 수는 없는 것 같음
     while True:
-        idx = random.randrange(100)
+        idx = random.randrange(150) # n
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         img.click()
@@ -232,8 +232,23 @@ def scrap_photo_google(keyword):
     else:
         print('Image updates!')
 
+    # 파일 저장. Request + urlopen 사용
     filename = "./{}/{}_{}.jpg".format(keyword, keyword, str(datetime.today().date()))
-    urlretrieve(src, filename)
+
+    # 아래 URLopener 클래스는 DeprecationWarning 뜸
+
+    # opener = URLopener() # 이걸로 열어줘야 403 에러 안 남
+    # urlretrieve(src, filename) # 이건 403 에러 뜨는 경우 있음
+    # opener.addheader('User-Agent', 'whatever')
+    # opener.retrieve(src, filename)
+
+    headers = {'User-Agent': 'Chrome/88.0.4324.27'} # 403 에러 방지. Chrome/88.0.4324.27 자리에 'whatever' 넣어도 됨
+    req = Request(src, headers=headers)
+    html = urlopen(req)
+    source = html.read()
+
+    with open(filename, "wb") as f:
+        f.write(source)
 
     driver.close()
 
