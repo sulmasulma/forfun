@@ -248,13 +248,6 @@ def scrap_photo_google(keyword):
     # 파일 저장. Request + urlopen 사용
     filename = "./{}/{}_{}.jpg".format(keyword, keyword, str(datetime.today().date()))
 
-    # 아래 URLopener 클래스는 DeprecationWarning 뜸
-
-    # opener = URLopener() # 이걸로 열어줘야 403 에러 안 남
-    # urlretrieve(src, filename) # 이건 403 에러 뜨는 경우 있음
-    # opener.addheader('User-Agent', 'whatever')
-    # opener.retrieve(src, filename)
-
     headers = {'User-Agent': 'Chrome/88.0.4324.27'} # 403 에러 방지. Chrome/88.0.4324.27 자리에 'whatever' 넣어도 됨
     req = Request(src, headers=headers)
     html = urlopen(req)
