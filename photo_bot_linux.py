@@ -41,7 +41,9 @@ slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
 signing_secret = os.environ.get("SLACK_SIGNING_SECRET") # 이 단계에선 필요 없음
 client = WebClient(token=slack_bot_token)
 
+# 전역 변수
 conversations_store = {} # 채널 목록 저장
+file_type = ""
 
 
 # 채널 목록 dict에 저장
@@ -224,15 +226,17 @@ def scrap_photo_google(keyword):
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         img.click()
-        time.sleep(3) # 이미지 클릭후 로딩까지 잠시 대기
+        time.sleep(10) # 이미지 클릭후 로딩까지 잠시 대기
 
         # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
         # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
         html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div/div[2]/a/img') # 현재 클릭하여 확대한 이미지 가져오기
         src = html_objects.get_attribute('src')
+        global file_type
+        file_type = src[-3:]
 
         # src가 http로 시작하는 것만으로 가져오기
-        if src[:4] == 'http':
+        if src[:4] == 'http' and file_type in ['gif', 'png', 'jpg']:
             print("gif 정상 성공!")
             break
         
@@ -246,7 +250,7 @@ def scrap_photo_google(keyword):
         print('Image updates!')
 
     # 파일 저장. Request + urlopen 사용
-    filename = "./{}/{}_{}.jpg".format(keyword, keyword, str(datetime.today().date()))
+    filename = "./{}/{}_{}.{}".format(keyword, keyword, str(datetime.today().date()), file_type)
 
     headers = {'User-Agent': 'Chrome/88.0.4324.27'} # 403 에러 방지. Chrome/88.0.4324.27 자리에 'whatever' 넣어도 됨
     req = Request(src, headers=headers)
@@ -279,7 +283,7 @@ def main():
 
     # slack에 파일 올리기
     photo_location = "./{}".format(keyword)
-    photo = "/{}_{}.jpg".format(keyword, str(datetime.today().date())) # gif -> jpg로 저장해도 움직임
+    photo = "/{}_{}.{}".format(keyword, str(datetime.today().date()), file_type)
     upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
 
     

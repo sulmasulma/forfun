@@ -28,7 +28,9 @@ slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
 signing_secret = os.environ.get("SLACK_SIGNING_SECRET") # 이 단계에선 필요 없음
 client = WebClient(token=slack_bot_token)
 
+# 전역 변수
 conversations_store = {} # 채널 목록 저장
+file_type = ""
 
 
 # 채널 목록 dict에 저장
@@ -187,10 +189,10 @@ def scrap_photo_google(keyword):
     
     # 1. 웹 접속 - 구글
     print('Loading...')
-    driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
+    driver.implicitly_wait(30) # 브라우저 오픈시까지 대기 (최대 30초)
 
     # 고화질(800x600보다 큰 이미지) + 최근 1주로 검색하는 url
-    # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1달
+    # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword_parse) # 최근 1달
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:w%2Cisz:lt%2Cislt:svga".format(keyword_parse) # 최근 1주
     url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=itp:animated".format(keyword_parse) # gif(전체 기간)
     driver.get(url)
@@ -211,15 +213,17 @@ def scrap_photo_google(keyword):
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         img.click()
-        time.sleep(3) # 이미지 클릭후 로딩까지 잠시 대기
+        time.sleep(10) # 이미지 클릭후 로딩까지 잠시 대기
 
         # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
         # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
         html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div/div[2]/a/img') # 현재 클릭하여 확대한 이미지 가져오기
-        src = html_objects.get_attribute('src')
+        src = html_objects.get_attribute('src') # 이미지 주소
+        global file_type
+        file_type = src[-3:]
 
-        # src가 http로 시작하는 것만으로 가져오기
-        if src[:4] == 'http':
+        # src가 http로 시작하고, 파일 확장자로 끝나는 것만으로 가져오기 (정상 움짤이 아닌 경우, src 마지막 3자가 확장자가 아님)
+        if src[:4] == 'http' and file_type in ['gif', 'png', 'jpg']:
             print("gif 정상 성공!")
             break
         
@@ -233,7 +237,7 @@ def scrap_photo_google(keyword):
         print('Image updates!')
 
     # 파일 저장. Request + urlopen 사용
-    filename = "./{}/{}_{}.jpg".format(keyword, keyword, str(datetime.today().date()))
+    filename = "./{}/{}_{}.{}".format(keyword, keyword, str(datetime.today().date()), file_type)
 
     # 방법 1. 403 error
     # urlretrieve(src, filename) # 이건 403 에러 뜨는 경우 있음
@@ -275,7 +279,7 @@ def main():
 
     # slack에 파일 올리기
     photo_location = "./{}".format(keyword)
-    photo = "/{}_{}.jpg".format(keyword, str(datetime.today().date())) # gif -> jpg로 저장해도 움직임
+    photo = "/{}_{}.{}".format(keyword, str(datetime.today().date()), file_type)
     upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
 
     
