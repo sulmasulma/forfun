@@ -106,7 +106,7 @@ def upload_file(channel_id, file_name):
         # Uploading files requires the `files:write` scope
         result = client.files_upload(
             channels = channel_id,
-            initial_comment = "<!here>", # 이미지와 같이 들어가는 텍스트. 공지 처리
+            initial_comment = "<!channel>", # 이미지와 같이 들어가는 텍스트. 공지 처리
             file = file_name,
         )
         # Log the result
@@ -226,7 +226,7 @@ def scrap_photo_google(keyword):
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         img.click()
-        time.sleep(10) # 이미지 클릭후 로딩까지 잠시 대기
+        time.sleep(5) # 이미지 클릭후 로딩까지 잠시 대기
 
         # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
         # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
@@ -278,7 +278,8 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 크롤링
-    keyword = '오마이걸 아린'
+    # keyword = '오마이걸 아린'
+    keyword = '조유리'
     scrap_photo_google(keyword)
 
     # slack에 파일 올리기

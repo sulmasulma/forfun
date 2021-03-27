@@ -4,6 +4,12 @@
 *.zip
 *.parquet
 *.pem
+*.gif
+*.jpg
+*.png
+*.txt
 
 # folder
 libs/
+practice/
+
