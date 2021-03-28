@@ -28,9 +28,10 @@ options.add_argument("enable-automation")
 options.add_argument("--disable-infobars")
 options.add_argument("--disable-dev-shm-usage")
 
+# 웹 접속 - 구글
 driver = webdriver.Chrome(options=options)
-
-
+print('Loading...')
+driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
 # logging
 logger = logging.getLogger()
@@ -199,10 +200,6 @@ def scrap_photo_naver():
 def scrap_photo_google(keyword):
 
     keyword_parse = parse.quote(keyword) # url에 넣는 용도
-    
-    # 1. 웹 접속 - 구글
-    print('Loading...')
-    driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
     # 고화질(800x600보다 큰 이미지) + 최근 1주로 검색하는 url
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword) # 최근 1달
@@ -260,7 +257,7 @@ def scrap_photo_google(keyword):
     with open(filename, "wb") as f:
         f.write(source)
 
-    driver.close()
+    # driver.close()
 
     print('Download complete!')
 
@@ -277,15 +274,18 @@ def main():
     # post_message(channel_arin, "메시지 테스트")
     # post_message_raw(channel_arin, "메시지 테스트")
 
-    # 크롤링
-    # keyword = '오마이걸 아린'
-    keyword = '조유리'
-    scrap_photo_google(keyword)
+    # 여러장 올리기
+    keywords = ['오마이걸 아린', '조유리', '아이들 우기', '예지']
+    for keyword in keywords:
+        scrap_photo_google(keyword)
 
-    # slack에 파일 올리기
-    photo_location = "./{}".format(keyword)
-    photo = "/{}_{}.{}".format(keyword, str(datetime.today().date()), file_type)
-    upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
+        # slack에 파일 올리기
+        photo_location = "./{}".format(keyword)
+        photo = "/{}_{}.{}".format(keyword, str(datetime.today().date()), file_type)
+        upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
+
+    # 드라이버 종료
+    driver.close()
 
     
 
