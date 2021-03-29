@@ -273,7 +273,7 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 여러장 올리기
-    keywords = ['오마이걸 아린', '조유리', '아이들 우기', '예지']
+    keywords = ['오마이걸 아린', '조유리', '아이들 우기', '있지 예지']
     for keyword in keywords:
         scrap_photo_google(keyword)
 
