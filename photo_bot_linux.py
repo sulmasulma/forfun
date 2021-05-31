@@ -27,8 +27,10 @@ options.add_argument("start-maximized")
 options.add_argument("enable-automation")
 options.add_argument("--disable-infobars")
 options.add_argument("--disable-dev-shm-usage")
+# options.add_argument("--single-process")
 
 # 웹 접속 - 구글
+# driver = webdriver.Chrome('/usr/bin/chromedriver', options=options) # 원래 디렉토리 위치 지정 안해줘도 됐음
 driver = webdriver.Chrome(options=options)
 print('Loading...')
 driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
@@ -249,7 +251,7 @@ def scrap_photo_google(keyword):
     # 파일 저장. Request + urlopen 사용
     filename = "./{}/{}_{}.{}".format(keyword, keyword, str(datetime.today().date()), file_type)
 
-    headers = {'User-Agent': 'Chrome/88.0.4324.27'} # 403 에러 방지. Chrome/88.0.4324.27 자리에 'whatever' 넣어도 됨
+    headers = {'User-Agent': 'whatever'} # 403 에러 방지. 'Chrome/88.0.4324.27'(버전 맞춰줌) or 'whatever'
     req = Request(src, headers=headers)
     html = urlopen(req)
     source = html.read()
