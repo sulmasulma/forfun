@@ -15,7 +15,7 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 ### for mac/windows ###
-driver = webdriver.Chrome('../../chromedriver') # linux에서는 사용 x
+driver = webdriver.Chrome('../../chromedriver') # 설치한 chromedriver 위치
 from selenium.webdriver.common.keys import Keys
 
 # 웹 접속 - 구글
@@ -194,6 +194,8 @@ def scrap_photo_google(keyword):
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Cisz:lt%2Cislt:svga".format(keyword_parse) # 최근 1달
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:w%2Cisz:lt%2Cislt:svga".format(keyword_parse) # 최근 1주
     url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=itp:animated".format(keyword_parse) # gif(전체 기간)
+    # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:d%2Citp:animated".format(keyword_parse) # gif(최근 1일). 정확도 좋지 않음
+    
     driver.get(url)
 
     # 1.5 페이지 스크롤 다운 - 페이지를 스크롤 하여 더 많은 사진을 수집
@@ -247,7 +249,7 @@ def scrap_photo_google(keyword):
     # opener.retrieve(src, filename)
 
     # 방법 3. urlopen
-    headers = {'User-Agent': 'Chrome/88.0.4324.27'} # Chrome/88.0.4324.27 or 'whatever'
+    headers = {'User-Agent': 'whatever'} # 403 에러 방지. 'Chrome/88.0.4324.27'(버전 맞춰줌) or 'whatever'
     req = Request(src, headers=headers)
     html = urlopen(req)
     source = html.read()
@@ -273,7 +275,7 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 여러장 올리기
-    keywords = ['오마이걸 아린', '조유리', '아이들 우기', '있지 예지']
+    keywords = ['오마이걸 아린', '조유리', '오마이걸 지호', '있지 예지']
     for keyword in keywords:
         scrap_photo_google(keyword)
 
