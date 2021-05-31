@@ -2,7 +2,7 @@
 import time, os, sys
 # sys.path.append('./libs') # libs 대신 Layers 이용하여 라이브러리 configure
 import logging, requests, json, random
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 # 크롤링
 from selenium import webdriver
@@ -39,7 +39,6 @@ chrome_options.binary_location = "/opt/python/bin/headless-chromium"
 driver = webdriver.Chrome('/opt/python/bin/chromedriver', chrome_options=chrome_options)
 
 # 웹 접속 - 구글
-# driver = webdriver.Chrome(options=options)
 print('Loading...')
 driver.implicitly_wait(30) # 브라우저 오픈시까지 대기
 
@@ -54,6 +53,8 @@ client = WebClient(token=slack_bot_token)
 # 전역 변수
 conversations_store = {} # 채널 목록 저장
 file_type = ""
+KST = timezone(timedelta(hours=9))
+date_now = str(datetime.now(tz=KST).date()) # OS 시간이 아닌, 한국 시간으로 설정
 
 
 # 채널 목록 dict에 저장
@@ -170,7 +171,7 @@ def scrap_photo_google(keyword):
         print("http 형식 아님. 다시 찾기")
 
     # 파일 저장. Request + urlopen 사용
-    filename = "/tmp/{}_{}.{}".format(keyword, str(datetime.today().date()), file_type) # lambda에선 /tmp/ 에만 file write 가능
+    filename = "/tmp/{}_{}.{}".format(keyword, date_now, file_type) # lambda에선 /tmp/ 에만 file write 가능
     # print(os.getcwd()) # /var/task
 
     headers = {'User-Agent': 'whatever'} # 403 에러 방지. 'Chrome/88.0.4324.27'(버전 맞춰줌) or 'whatever'
@@ -200,7 +201,7 @@ def lambda_handler(event, context):
         scrap_photo_google(keyword)
 
         # slack에 파일 올리기
-        photo = "/tmp/{}_{}.{}".format(keyword, str(datetime.today().date()), file_type)
+        photo = "/tmp/{}_{}.{}".format(keyword, date_now, file_type)
         upload_file("#아린", photo) # channel id 말고 이름으로 써도 됨
 
     # 드라이버 닫으면 cron job 작동이 되지 않음
