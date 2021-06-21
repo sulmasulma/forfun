@@ -158,7 +158,7 @@ def scrap_photo_google(keyword):
 
         # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
         # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
-        html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div/div[2]/a/img') # 현재 클릭하여 확대한 이미지 가져오기
+        html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img') # xpath 변경
         src = html_objects.get_attribute('src')
         global file_type
         file_type = src[-3:]
@@ -196,13 +196,18 @@ def lambda_handler(event, context):
     # post_message('#아린', "메시지 테스트")
 
     # 여러장 올리기
-    keywords = ['오마이걸 아린', '조유리', '오마이걸 지호', '있지 예지']
+    keywords = ['오마이걸 아린', '조유리', '아이들 우기', '있지 예지']
     for keyword in keywords:
         scrap_photo_google(keyword)
 
         # slack에 파일 올리기
         photo = "/tmp/{}_{}.{}".format(keyword, date_now, file_type)
-        upload_file("#아린", photo) # channel id 말고 이름으로 써도 됨
+
+        # 채널 구분
+        if keyword == '오마이걸 아린':
+            upload_file("#아린", photo) # channel id 말고 이름으로 써도 됨
+        else:
+            upload_file("#아이돌", photo) # 다른 채널
 
     # 드라이버 닫으면 cron job 작동이 되지 않음
     # driver.close()
