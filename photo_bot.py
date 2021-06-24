@@ -6,6 +6,7 @@ from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
+# from selenium.common.exceptions import ElementClickInterceptedException
 from urllib.request import urlretrieve, urlopen, Request
 # from urllib.request import URLopener
 from urllib import parse
@@ -213,22 +214,27 @@ def scrap_photo_google(keyword):
         idx = random.randrange(150) # n
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
-        img.click()
-        time.sleep(5) # 이미지 클릭후 로딩까지 잠시 대기
+        try:
+            img.click() # img 말고 a 태그를 클릭해야 하나?
+            time.sleep(3) # 이미지 클릭후 로딩까지 잠시 대기
 
-        # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
-        # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
-        html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img')
-        src = html_objects.get_attribute('src') # 이미지 주소
-        global file_type
-        file_type = src[-3:]
+            # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
+            # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
+            html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img') # xpath 변경
+            src = html_objects.get_attribute('src') # 이미지 주소
+            global file_type
+            file_type = src[-3:]
 
-        # src가 http로 시작하고, 파일 확장자로 끝나는 것만으로 가져오기 (정상 움짤이 아닌 경우, src 마지막 3자가 확장자가 아님)
-        if src[:4] == 'http' and file_type in ['gif', 'png', 'jpg']:
-            print("gif 정상 성공!")
-            break
-        
-        print("http 형식 아님. 다시 찾기")
+            # src가 http로 시작하고, 파일 확장자로 끝나는 것만으로 가져오기 (정상 움짤이 아닌 경우, src 마지막 3자가 확장자가 아님)
+            if src[:4] == 'http' and file_type in ['gif', 'png', 'jpg']:
+                print("gif 정상 성공!")
+                break
+            
+            print("http 형식 아님. 다시 찾기")
+
+        except Exception as e:
+            logger.error("Exception 에러: {}".format(e))
+            continue
 
     # 폴더 없으면 새로 만들기
     if not os.path.isdir('./{}'.format(keyword)):
@@ -275,7 +281,8 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 여러장 올리기
-    keywords = ['오마이걸 아린', '조유리', '아이들 우기', '있지 예지']
+    # keywords = ['오마이걸 아린', '조유리', '아이들 우기', '있지 예지']
+    keywords = ['있지 예지', '있지 예지', '있지 예지']
     for keyword in keywords:
         scrap_photo_google(keyword)
 
@@ -285,9 +292,9 @@ def main():
 
         # 채널 구분
         if keyword == '오마이걸 아린':
-            upload_file("#아린", photo_location + photo) # channel id 말고 이름으로 써도 됨
+            upload_file("#아이돌_테스트", photo_location + photo) # channel id 말고 이름으로 써도 됨
         else:
-            upload_file("#아이돌", photo_location + photo)
+            upload_file("#아이돌_테스트", photo_location + photo)
 
     # 드라이버 종료
     driver.close()
