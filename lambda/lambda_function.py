@@ -111,15 +111,22 @@ def post_message_raw(channel_id, message):
 
 
 # 파일 올리기 (client 이용)
-def upload_file(channel_id, file_name):
+def upload_file(channel_id, file_name, is_initial = False):
     try:
         # Call the files.upload method using the WebClient
         # Uploading files requires the `files:write` scope
-        result = client.files_upload(
-            channels = channel_id,
-            initial_comment = "<!channel>", # 이미지와 같이 들어가는 텍스트. 공지 처리
-            file = file_name,
-        )
+        if is_initial:
+            result = client.files_upload(
+                channels = channel_id,
+                initial_comment = "<!channel>", # 이미지와 같이 들어가는 텍스트. 공지 처리
+                file = file_name,
+            )
+        else:
+            result = client.files_upload(
+                channels = channel_id,
+                file = file_name,
+            )   
+
         # Log the result
         logger.info(result)
 
@@ -166,7 +173,7 @@ def scrap_photo_google(keyword):
 
             # src가 http로 시작하는 것만으로 가져오기
             if src[:4] == 'http' and file_type in ['gif', 'png', 'jpg']:
-                print("gif 정상 성공!")
+                print("{} gif 정상 성공!".format(keyword))
                 break
             
             print("http 형식 아님. 다시 찾기")
@@ -212,7 +219,7 @@ def lambda_handler(event, context):
         if keyword == '오마이걸 아린':
             upload_file("#아린", photo) # channel id 말고 이름으로 써도 됨
         else:
-            upload_file("#아이돌", photo) # 다른 채널
+            upload_file("#아이돌", photo, True) # 다른 채널. with initial comment
 
     # 드라이버 닫으면 cron job 작동이 되지 않음
     # driver.close()
