@@ -6,6 +6,10 @@ from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
+# from selenium.webdriver.chrome import service
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 # from selenium.common.exceptions import ElementClickInterceptedException
 from urllib.request import urlretrieve, urlopen, Request
 # from urllib.request import URLopener
@@ -15,8 +19,10 @@ from urllib import parse
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-### for mac/windows ###
-driver = webdriver.Chrome('../../chromedriver') # 설치한 chromedriver 위치
+# 이제 chromedriver 설치하지 않고, 브라우저에 설치된 Chrome 사용
+chrome_options = webdriver.ChromeOptions()
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
 from selenium.webdriver.common.keys import Keys
 
 # 웹 접속 - 구글
@@ -35,7 +41,6 @@ client = WebClient(token=slack_bot_token)
 # 전역 변수
 conversations_store = {} # 채널 목록 저장
 file_type = ""
-
 
 # 채널 목록 dict에 저장
 def save_conversations(conversations):
@@ -196,13 +201,14 @@ def scrap_photo_google(keyword):
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:w%2Cisz:lt%2Cislt:svga".format(keyword_parse) # 최근 1주
     url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=itp:animated".format(keyword_parse) # gif(전체 기간)
     # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:d%2Citp:animated".format(keyword_parse) # gif(최근 1일). 정확도 좋지 않음
+    # url = "https://www.google.com/search?q={}&tbm=isch&hl=ko&safe=images&tbs=qdr:m%2Citp:animated".format(keyword_parse) # gif(최근 1주). 테스트. 1달은 qdr:m
     
     driver.get(url)
 
     # 1.5 페이지 스크롤 다운 - 페이지를 스크롤 하여 더 많은 사진을 수집
     # 1초에 한번씩 3번 반복하여 페이지 다운 스크롤
     body = driver.find_element_by_css_selector('body')
-    for _ in range(10):
+    for _ in range(1): # test
         body.send_keys(Keys.PAGE_DOWN)
         time.sleep(1)
 
@@ -211,7 +217,7 @@ def scrap_photo_google(keyword):
 
     # 날짜별 중복을 피하기 위해, 결과 중 상위 n개 결과 랜덤으로 고르기. 배열 길이가 300이어도 299번째 요소를 접근할 수는 없는 것 같음
     while True:
-        idx = random.randrange(150) # n
+        idx = random.randrange(20) # n. test
         print("{}번째 사진 고르기".format(idx + 1))
         img = photo_list[idx]
         try:
@@ -227,7 +233,7 @@ def scrap_photo_google(keyword):
 
             # src가 http로 시작하고, 파일 확장자로 끝나는 것만으로 가져오기 (정상 움짤이 아닌 경우, src 마지막 3자가 확장자가 아님)
             if src[:4] == 'http' and file_type in ['gif', 'png', 'jpg']:
-                print("gif 정상 성공!")
+                print("{} gif 정상 성공!".format(keyword))
                 break
             
             print("http 형식 아님. 다시 찾기")
@@ -281,8 +287,9 @@ def main():
     # post_message_raw(channel_arin, "메시지 테스트")
 
     # 여러장 올리기
-    # keywords = ['오마이걸 아린', '조유리', '아이들 우기', '있지 예지']
-    keywords = ['있지 예지', '있지 예지', '있지 예지']
+    # keywords = ['오마이걸 아린', '조유리', '김민주', '있지 예지']
+    # keywords = ['있지 예지', '있지 예지', '있지 예지']
+    keywords = ['아이브 안유진', '아이브 안유진', '아이브 안유진']
     for keyword in keywords:
         scrap_photo_google(keyword)
 
@@ -295,6 +302,7 @@ def main():
             upload_file("#아이돌_테스트", photo_location + photo) # channel id 말고 이름으로 써도 됨
         else:
             upload_file("#아이돌_테스트", photo_location + photo)
+        # break # test
 
     # 드라이버 종료
     driver.close()
