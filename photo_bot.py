@@ -6,7 +6,6 @@ from datetime import datetime
 
 # 크롤링
 from selenium import webdriver
-# from selenium.webdriver.chrome import service
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -302,7 +301,6 @@ def main():
             upload_file("#아이돌_테스트", photo_location + photo) # channel id 말고 이름으로 써도 됨
         else:
             upload_file("#아이돌_테스트", photo_location + photo)
-        # break # test
 
     # 드라이버 종료
     driver.close()
