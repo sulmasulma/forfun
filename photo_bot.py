@@ -7,6 +7,8 @@ from datetime import datetime
 # 크롤링
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 # from selenium.common.exceptions import ElementClickInterceptedException
@@ -21,8 +23,6 @@ from slack_sdk.errors import SlackApiError
 # 이제 chromedriver 설치하지 않고, 브라우저에 설치된 Chrome 사용
 chrome_options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-
-from selenium.webdriver.common.keys import Keys
 
 # 웹 접속 - 구글
 print('Loading...')
@@ -206,13 +206,15 @@ def scrap_photo_google(keyword):
 
     # 1.5 페이지 스크롤 다운 - 페이지를 스크롤 하여 더 많은 사진을 수집
     # 1초에 한번씩 3번 반복하여 페이지 다운 스크롤
-    body = driver.find_element_by_css_selector('body')
+    # body = driver.find_element_by_css_selector('body')
+    body = driver.find_element(By.CSS_SELECTOR, 'body')
     for _ in range(1): # test
         body.send_keys(Keys.PAGE_DOWN)
         time.sleep(1)
 
     # 2. 검색 결과 이미지들 수집(썸네일)
-    photo_list = driver.find_elements_by_css_selector('img.rg_i')
+    # photo_list = driver.find_elements_by_css_selector('img.rg_i')
+    photo_list = driver.find_elements(By.CSS_SELECTOR, 'img.rg_i') # .rg_i.Q4LuWd
 
     # 날짜별 중복을 피하기 위해, 결과 중 상위 n개 결과 랜덤으로 고르기. 배열 길이가 300이어도 299번째 요소를 접근할 수는 없는 것 같음
     while True:
@@ -225,7 +227,8 @@ def scrap_photo_google(keyword):
 
             # html_objects = driver.find_element_by_css_selector('img.n3VNCb') # 이게 틀린 듯. 잘못된 걸 찾음
             # html_objects = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[{}]/a[1]/div[1]/img'.format(str(idx + 1)))
-            html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img') # xpath 변경
+            # html_objects = driver.find_element_by_xpath('//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img') # xpath 변경
+            html_objects = driver.find_element(By.XPATH, '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img') # 문법 및 xpath 수정
             src = html_objects.get_attribute('src') # 이미지 주소
             global file_type
             file_type = src[-3:]
@@ -288,7 +291,9 @@ def main():
     # 여러장 올리기
     # keywords = ['오마이걸 아린', '조유리', '김민주', '있지 예지']
     # keywords = ['있지 예지', '있지 예지', '있지 예지']
-    keywords = ['아이브 안유진', '아이브 안유진', '아이브 안유진']
+    # keywords = ['아이브 안유진', '아이브 안유진', '아이브 안유진']
+    keywords = ['안유진', '안유진', '안유진']
+
     for keyword in keywords:
         scrap_photo_google(keyword)
 
