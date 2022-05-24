@@ -213,18 +213,13 @@ def lambda_handler(event, context):
 
     # 여러장 올리기
     # keywords = ['오마이걸 아린', '조유리', '오마이걸 유아', '있지 예지']
-    keywords = ['오마이걸 아린', '조유리', '아이브 안유진', '있지 예지']
+    keywords = ['조유리', '아이브 안유진', '있지 예지']
     for keyword in keywords:
         scrap_photo_google(keyword)
 
         # slack에 파일 올리기
         photo = "/tmp/{}_{}.{}".format(keyword, date_now, file_type)
-
-        # 채널 구분
-        if keyword == '오마이걸 아린':
-            upload_file("#아린", photo) # channel id 말고 이름으로 써도 됨
-        else:
-            upload_file("#아이돌", photo, True) # 다른 채널. with initial comment
+        upload_file("#아이돌", photo, True) # 다른 채널. with initial comment
 
     # 드라이버 닫으면 cron job 작동이 되지 않음
     # driver.close()
